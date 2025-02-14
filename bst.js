@@ -66,7 +66,7 @@ class Tree {
     // traverse tree until values match
     if (value > node.value) {
       node.rightChild = this.deleteItemRecursive(node.rightChild, value);
-    } else if (value > node.value) {
+    } else if (value < node.value) {
       node.leftChild = this.deleteItemRecursive(node.leftChild, value);
     } else {
       // node value matches delete value
@@ -80,9 +80,9 @@ class Tree {
       }
 
       // both children present
-      let succ = getSuccessor(node);
+      let succ = this.getSuccessor(node);
       node.value = succ.value;
-      node.rightChild = deleteItemRecursive(node.rightChild, succ.value);
+      node.rightChild = this.deleteItemRecursive(node.rightChild, succ.value);
     }
 
     return node;
@@ -98,7 +98,7 @@ class Tree {
   }
 
   find(value) {
-    return this.findRecursive(value, this.root);
+    return this.findRecursive(this.root, value);
   }
 
   findRecursive(node, value) {
@@ -195,6 +195,68 @@ class Tree {
     callback(node);
   }
 
+  height(node) {
+    if (node === null) {
+      return -1;
+    }
+
+    let leftHeight = this.height(node.leftChild);
+    let rightHeight = this.height(node.rightChild);
+
+    return Math.max(leftHeight, rightHeight) + 1;
+  }
+
+  depth(node) {
+    let currentNode = this.root;
+    let depth = 0;
+
+    // if null is passed in as node, or a node object that isn't in the tree
+    if (node === null || this.find(node.value) === null) {
+      return -1;
+    }
+
+    while (currentNode !== node && currentNode !== null) {
+      if (node.value > currentNode.value) {
+        currentNode = currentNode.rightChild;
+      } else {
+        currentNode = currentNode.leftChild;
+      }
+
+      depth++;
+    }
+
+    return depth;
+  }
+
+  isBalanced() {
+    let rightSide = this.root.rightChild;
+    let leftSide = this.root.leftChild;
+
+    if (Math.abs(this.height(rightSide) - this.height(leftSide)) > 1) {
+      return false;
+    }
+
+    return true;
+  }
+
+  rebalance() {
+    if (this.isBalanced()) {
+      return "This tree is already balanced.";
+    }
+
+    let array = [];
+    this.inOrder((node) => array.push(node.value));
+    this.root = this.buildTree(array);
+  }
+
+  printNode(node) {
+    console.log(node.value);
+  }
+
+  printTree() {
+    this.prettyPrint(this.root);
+  }
+
   // provided console bst print function
   prettyPrint(node, prefix = "", isLeft = true) {
     if (node === null) {
@@ -228,10 +290,4 @@ class Node {
   }
 }
 
-function printNode(node) {
-  console.log(node.value);
-}
-let array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
-let bst = new Tree(array);
-bst.prettyPrint(bst.root);
-bst.postOrder(printNode);
+export { Tree };
