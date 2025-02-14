@@ -30,46 +30,46 @@ class Tree {
   }
 
   insert(value) {
-    return this.insertRecursive(value, this.root);
+    return this.insertRecursive(this.root, value);
   }
 
-  insertRecursive(value, node) {
+  insertRecursive(node, value) {
     // reached leaf
     if (node === null) {
       return new Node(value);
     }
 
-    // duplicate
+    // duplicate value
     if (value === node.value) {
       return node;
     }
 
+    // traverse tree
     if (value > node.value) {
-      node.rightChild = this.insertRecursive(value, node.rightChild);
+      node.rightChild = this.insertRecursive(node.rightChild, value);
     } else if (value < node.value) {
-      node.leftChild = this.insertRecursive(value, node.leftChild);
+      node.leftChild = this.insertRecursive(node.leftChild, value);
     }
 
     return node;
   }
 
   deleteItem(value) {
-    return this.deleteItemRecursive(value, this.root);
+    return this.deleteItemRecursive(this.root, value);
   }
 
-  deleteItemRecursive(value, node) {
+  deleteItemRecursive(node, value) {
     if (node === null) {
       return node;
     }
 
     // traverse tree until values match
     if (value > node.value) {
-      node.rightChild = this.deleteItemRecursive(value, node.rightChild);
+      node.rightChild = this.deleteItemRecursive(node.rightChild, value);
     } else if (value > node.value) {
-      node.leftChild = this.deleteItemRecursive(value, node.leftChild);
+      node.leftChild = this.deleteItemRecursive(node.leftChild, value);
     } else {
-      // node value matches value
-
+      // node value matches delete value
       // node has 0 or 1 child only
       if (node.leftChild === null) {
         return node.rightChild;
@@ -101,18 +101,98 @@ class Tree {
     return this.findRecursive(value, this.root);
   }
 
-  findRecursive(value, node) {
+  findRecursive(node, value) {
     // root is null, leaf reached i.e. value not found, or value was found
     if (node === null || value === node.value) {
       return node;
     }
 
-    // recursively traverse tree in the desired direction
+    // traverse tree
     if (value > node.value) {
-      return this.findRecursive(value, node.rightChild);
+      return this.findRecursive(node.rightChild, value);
     } else if (value < node.value) {
-      return this.findRecursive(value, node.leftChild);
+      return this.findRecursive(node.leftChild, value);
     }
+  }
+
+  levelOrder(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is the required argument");
+    }
+
+    let currentNode = this.root;
+    let queue = [];
+    if (currentNode === null) {
+      return;
+    }
+
+    // utilize queue fifo functionality to order the nodes correctly
+    queue.push(currentNode);
+    while (queue.length !== 0) {
+      currentNode = queue[0];
+      callback(currentNode);
+      if (currentNode.leftChild !== null) {
+        queue.push(currentNode.leftChild);
+      }
+      if (currentNode.rightChild !== null) {
+        queue.push(currentNode.rightChild);
+      }
+
+      queue = queue.slice(1);
+    }
+  }
+
+  preOrder(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is the required argument");
+    }
+
+    this.preOrderRecursive(this.root, callback);
+  }
+
+  preOrderRecursive(node, callback) {
+    if (node === null) {
+      return;
+    }
+    callback(node);
+    this.preOrderRecursive(node.leftChild, callback);
+    this.preOrderRecursive(node.rightChild, callback);
+  }
+
+  inOrder(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is the required argument");
+    }
+
+    this.inOrderRecursive(this.root, callback);
+  }
+
+  inOrderRecursive(node, callback) {
+    if (node === null) {
+      return;
+    }
+
+    this.inOrderRecursive(node.leftChild, callback);
+    callback(node);
+    this.inOrderRecursive(node.rightChild, callback);
+  }
+
+  postOrder(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is the required argument");
+    }
+
+    this.postOrderRecursive(this.root, callback);
+  }
+
+  postOrderRecursive(node, callback) {
+    if (node === null) {
+      return;
+    }
+
+    this.postOrderRecursive(node.leftChild, callback);
+    this.postOrderRecursive(node.rightChild, callback);
+    callback(node);
   }
 
   // provided console bst print function
@@ -148,6 +228,10 @@ class Node {
   }
 }
 
+function printNode(node) {
+  console.log(node.value);
+}
 let array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
 let bst = new Tree(array);
 bst.prettyPrint(bst.root);
+bst.postOrder(printNode);
